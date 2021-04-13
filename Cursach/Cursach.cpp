@@ -12,8 +12,6 @@
 #include <iostream>
 #include <string.h>
 
-//using std::cout;
-//using std::cin;
 static const int fieldSize = 128;
 static bool field[fieldSize][fieldSize];
 static bool isGameLife = false;
@@ -143,17 +141,28 @@ public:
 		target.draw(text);					// -------PROBLEM HERE---------
 	}
 };
-int lifeButtonPressedEvent(bool pushIn, bool toggleIn)
+int lifeButtonStartPressedEvent(bool pushIn, bool toggleIn)
 {
-	if (toggleIn)
+	if (pushIn)
 		isGameLife = true;
-	else
+	return 0;
+}
+int lifeButtonStopPressedEvent(bool pushIn, bool toggleIn)
+{
+	if (pushIn)
 		isGameLife = false;
 	return 0;
 }
 //-------------------------
 
 //-------------------------
+void clearField()
+{
+	for (int i = 0; i < fieldSize; i++)
+		for (int j = 0; j < fieldSize; j++)
+			field[i][j] = false;
+}
+
 int LoadButtonPressedEvent(bool pushIn, bool toggleIn)
 {
 	if (pushIn)
@@ -166,8 +175,11 @@ int LoadButtonPressedEvent(bool pushIn, bool toggleIn)
 int helpButtonPressedEvent(bool pushIn, bool toggleIn)
 {
 	if (pushIn)
+	{
 		isHelpActive = !isHelpActive;
-
+		clearField();
+		isGameLife = false;
+	}
 	return 0;
 }
 
@@ -496,7 +508,7 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 			{
 				ptr[event.mouseButton.x / (windowMain.getSize().x / fieldSize)][event.mouseButton.y / (windowMain.getSize().y / fieldSize)] = !ptr[event.mouseButton.x / (windowMain.getSize().x / fieldSize)][event.mouseButton.y / (windowMain.getSize().y / fieldSize)];
 			}
-			if (event.type == sf::Event::MouseButtonPressed && isHelpActive)
+			if (event.type == sf::Event::MouseButtonPressed)
 			{
 				isHelpActive = false;
 			}
@@ -558,12 +570,14 @@ void showControlPanel()
 
 	sf::Event event;
 
-	Button LifeButton;
-	LifeButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Life Button", 25, sf::Vector2u(15, 20), &lifeButtonPressedEvent);
-	Button LoadButton;
-	LoadButton.load(sf::Vector2u(10, 85), sf::Vector2u(150, 150), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Load organism (Not work yet)", 20, sf::Vector2u(15, 95), &LoadButtonPressedEvent);
-	Button RuleButton;
-	RuleButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Life Button", 25, sf::Vector2u(15, 20), &lifeButtonPressedEvent);
+	Button LifeStartButton;
+	LifeStartButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Start Life", 25, sf::Vector2u(15, 20), &lifeButtonStartPressedEvent);
+	Button LifeStopButton;
+	LifeStopButton.load(sf::Vector2u(10, 80), sf::Vector2u(150, 145), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Stop Life", 25, sf::Vector2u(15, 95), &lifeButtonStopPressedEvent);
+	//Button LoadButton;
+	//LoadButton.load(sf::Vector2u(10, 85), sf::Vector2u(150, 150), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Load organism (Not work yet)", 20, sf::Vector2u(15, 95), &LoadButtonPressedEvent);
+	//Button RuleButton;
+	//RuleButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Life Button", 25, sf::Vector2u(15, 20), &lifeButtonPressedEvent);
 	Button helpButton;
 	helpButton.load(sf::Vector2u(170, 10), sf::Vector2u(230, 40), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "help", 18, sf::Vector2u(185, 13), &helpButtonPressedEvent);
 
@@ -573,9 +587,10 @@ void showControlPanel()
 		while (controlWindow.pollEvent(event))
 		{
 			// transfer event to exemplar's methods
-			LifeButton.eventProcces(event);
-			LoadButton.eventProcces(event);
-			RuleButton.eventProcces(event);
+			LifeStartButton.eventProcces(event);
+			LifeStopButton.eventProcces(event);
+			//LoadButton.eventProcces(event);
+			//RuleButton.eventProcces(event);
 			helpButton.eventProcces(event);
 
 			if (event.type == sf::Event::Closed) {
@@ -587,8 +602,9 @@ void showControlPanel()
 		}
 
 		///////////////////
-		controlWindow.draw(LifeButton);
-		controlWindow.draw(LoadButton);
+		controlWindow.draw(LifeStartButton);
+		controlWindow.draw(LifeStopButton);
+		//controlWindow.draw(LoadButton);
 		controlWindow.draw(helpButton);
 		///////////////////
 

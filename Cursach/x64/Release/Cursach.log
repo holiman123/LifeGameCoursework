@@ -46,10 +46,10 @@ c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(102): warning C4244: а�
           ]
 c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(111): warning C4018: >=: несоответствие типов со знаком и без знака
 c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(111): warning C4018: <=: несоответствие типов со знаком и без знака
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(481): warning C4244: аргумент: преобразование "float" в "unsigned int", возможна потеря данных
+c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(495): warning C4244: аргумент: преобразование "float" в "unsigned int", возможна потеря данных
   Создание кода
-  214 of 218 functions (98.2%) were compiled, the rest were copied from previous compilation.
-    9 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+  2 of 219 functions ( 0.9%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
   Cursach.vcxproj -> C:\Users\luchi\source\repos\Cursach\x64\Release\Cursach.exe
