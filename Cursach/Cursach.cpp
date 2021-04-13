@@ -540,7 +540,7 @@ void showControlPanel()
 	Button LifeButton;
 	LifeButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170,170,170), sf::Color(130,130,130), "Life Button", 25, sf::Vector2u(15,20), &lifeButtonPressedEvent);
 	Button LoadButton;
-	LoadButton.load(sf::Vector2u(10, 85), sf::Vector2u(150, 150), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Load organism", 20, sf::Vector2u(15, 95), &LoadButtonPressedEvent);
+	LoadButton.load(sf::Vector2u(10, 85), sf::Vector2u(150, 150), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Load organism (Not work yet)", 20, sf::Vector2u(15, 95), &LoadButtonPressedEvent);
 	Button RuleButton;
 	RuleButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Life Button", 25, sf::Vector2u(15, 20), &lifeButtonPressedEvent);
 

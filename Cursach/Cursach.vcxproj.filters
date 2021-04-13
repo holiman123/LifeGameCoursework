@@ -24,4 +24,7 @@
       <Filter>Исходные файлы</Filter>
     </Font>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>
