@@ -12,11 +12,12 @@
 #include <iostream>
 #include <string.h>
 
-using std::cout;
-using std::cin;
-static const int fieldSize = 124;
+//using std::cout;
+//using std::cin;
+static const int fieldSize = 128;
 static bool field[fieldSize][fieldSize];
 static bool isGameLife = false;
+static bool isHelpActive = true;
 static const float cellSize = 8;
 static int simSpeed = 60;
 static sf::RenderWindow windowMain;
@@ -99,7 +100,7 @@ public:
 		// setting text on top of button
 		text = Text(buttonText, fontSize);
 		text.setPosition(sf::Vector2f(textPosition.x, textPosition.y)); // setting sf::Text position to middle of button
-		
+
 		return true;
 	}
 
@@ -148,7 +149,7 @@ int lifeButtonPressedEvent(bool pushIn, bool toggleIn)
 		isGameLife = true;
 	else
 		isGameLife = false;
-	return 1;
+	return 0;
 }
 //-------------------------
 
@@ -157,8 +158,15 @@ int LoadButtonPressedEvent(bool pushIn, bool toggleIn)
 {
 	if (pushIn)
 	{
-		
+
 	}
+
+	return 0;
+}
+int helpButtonPressedEvent(bool pushIn, bool toggleIn)
+{
+	if (pushIn)
+		isHelpActive = !isHelpActive;
 
 	return 0;
 }
@@ -442,7 +450,7 @@ void turn()
 	}
 }
 
-void showConsoleField(bool ptr[][fieldSize])
+/*void showConsoleField(bool ptr[][fieldSize])
 {
 	for (int i = 0; i < fieldSize; i++)
 	{
@@ -456,16 +464,21 @@ void showConsoleField(bool ptr[][fieldSize])
 		cout << "\n";
 	}
 	cout << "\n";
-}
+}*/
 
 void showGraphField(bool ptr[][fieldSize], int fps)
 {
-	buffer.create(fieldSize*fieldSize*4);
+	sf::Text helpText;
+	sf::Font font; font.loadFromFile("arial.TTF");
+	helpText.setFont(font);
+	helpText.setString("\t\tHELLO! this is Conway's Game of Life!\n\nto start your game you need to draw first generation of cells on gray window\nusing mouse control.\n\nTo calculate next generations you need to press \"Life Button\"\nin another window.\n\nYou can stop simulation anytime you want to draw or remove cells from field.\n\nEnjoy!");
+
+	buffer.create(fieldSize*fieldSize * 4);
 	buffer.setUsage(sf::VertexBuffer::Usage::Stream);
 
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
-	windowMain.create(sf::VideoMode(fieldSize*cellSize + 1, fieldSize*cellSize + 1), "Hellow world!", sf::Style::Default, settings);
+	windowMain.create(sf::VideoMode(fieldSize*cellSize + 1, fieldSize*cellSize + 1), "Hellow world!", sf::Style::Titlebar | sf::Style::Close, settings);
 	windowMain.setFramerateLimit(60);
 
 	windowMain.clear(sf::Color(255, 230, 185, 0));
@@ -474,20 +487,25 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 	{
 		while (windowMain.pollEvent(event))
 		{
-			if (event.type == sf::Event::Closed)
+			if (event.type == sf::Event::Closed) {
 				windowMain.close();
-			if (event.type == sf::Event::Resized)
-				windowMain.setSize(sf::Vector2u(fieldSize * cellSize + 1, fieldSize * cellSize + 1));
+				exit(1);
+			}
+
 			if (event.type == sf::Event::MouseButtonPressed && !isGameLife)
 			{
 				ptr[event.mouseButton.x / (windowMain.getSize().x / fieldSize)][event.mouseButton.y / (windowMain.getSize().y / fieldSize)] = !ptr[event.mouseButton.x / (windowMain.getSize().x / fieldSize)][event.mouseButton.y / (windowMain.getSize().y / fieldSize)];
 			}
-		}		
+			if (event.type == sf::Event::MouseButtonPressed && isHelpActive)
+			{
+				isHelpActive = false;
+			}
+		}
 
 		clockStart = clock();
-		
+
 		quads.setPrimitiveType(sf::Quads);
-		quads.resize(fieldSize*fieldSize*4);
+		quads.resize(fieldSize*fieldSize * 4);
 
 		//-
 		for (int i = 0; i < fieldSize; i++)
@@ -518,19 +536,22 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 
 		//- buffer
 		buffer.update(&quads[0]);
-		//-
+		//- 
 
 		windowMain.draw(buffer);
+		if (isHelpActive)
+			windowMain.draw(helpText);
+
 		windowMain.display();
 	}
 }
 
 void showControlPanel()
 {
-	sf::ContextSettings settings;
-	settings.antialiasingLevel = 8;
+	//sf::ContextSettings settings;
+	//settings.antialiasingLevel = 4;
 
-	controlWindow.create(sf::VideoMode(300,200),"Life control panel",sf::Style::Default, settings);
+	controlWindow.create(sf::VideoMode(300, 200), "Life control panel", sf::Style::Titlebar | sf::Style::Close);
 	controlWindow.clear(sf::Color(255, 230, 185, 0));
 	controlWindow.setVerticalSyncEnabled(true);
 	controlWindow.setFramerateLimit(120);
@@ -538,11 +559,13 @@ void showControlPanel()
 	sf::Event event;
 
 	Button LifeButton;
-	LifeButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170,170,170), sf::Color(130,130,130), "Life Button", 25, sf::Vector2u(15,20), &lifeButtonPressedEvent);
+	LifeButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Life Button", 25, sf::Vector2u(15, 20), &lifeButtonPressedEvent);
 	Button LoadButton;
 	LoadButton.load(sf::Vector2u(10, 85), sf::Vector2u(150, 150), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Load organism (Not work yet)", 20, sf::Vector2u(15, 95), &LoadButtonPressedEvent);
 	Button RuleButton;
 	RuleButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Life Button", 25, sf::Vector2u(15, 20), &lifeButtonPressedEvent);
+	Button helpButton;
+	helpButton.load(sf::Vector2u(170, 10), sf::Vector2u(230, 40), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "help", 18, sf::Vector2u(185, 13), &helpButtonPressedEvent);
 
 	while (controlWindow.isOpen())
 	{
@@ -553,18 +576,20 @@ void showControlPanel()
 			LifeButton.eventProcces(event);
 			LoadButton.eventProcces(event);
 			RuleButton.eventProcces(event);
+			helpButton.eventProcces(event);
 
-			if (event.type == sf::Event::Closed)
+			if (event.type == sf::Event::Closed) {
 				controlWindow.close();
-			if (event.type == sf::Event::MouseButtonPressed)
-				cout << event.mouseButton.x << " " << event.mouseButton.y << "\n";
-			if (event.type == sf::Event::Resized)
-				controlWindow.setSize(sf::Vector2u(300, 200));
+				exit(1);
+			}
+			//if (event.type == sf::Event::MouseButtonPressed)
+				//cout << event.mouseButton.x << " " << event.mouseButton.y << "\n";
 		}
 
 		///////////////////
 		controlWindow.draw(LifeButton);
 		controlWindow.draw(LoadButton);
+		controlWindow.draw(helpButton);
 		///////////////////
 
 		controlWindow.display();
@@ -572,7 +597,7 @@ void showControlPanel()
 	}
 }
 
-void consoleOutput(int times, int ms)
+/*void consoleOutput(int times, int ms)
 {
 	for (int i = 0; i < times; i++)
 	{
@@ -581,12 +606,14 @@ void consoleOutput(int times, int ms)
 		showConsoleField(field);
 		turn();
 	}
-}
+}*/
 
 int main()
 {
-	
-	cout << "Hello World!\n";
+	HWND hWnd = GetConsoleWindow();
+	ShowWindow(hWnd, SW_HIDE);
+
+	//cout << "Hello World!\n";
 
 	std::thread thr3(turn);
 	std::thread thr1(showGraphField, field, 60);
@@ -596,6 +623,5 @@ int main()
 	std::thread thr(showControlPanel);
 	//thr.detach();
 
-	cin.get();
-	
+	std::cin.get();
 }

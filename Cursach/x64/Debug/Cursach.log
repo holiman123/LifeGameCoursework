@@ -1,13 +1,4 @@
 ﻿  Cursach.cpp
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(88): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
-          with
-          [
-              T=unsigned int
-          ]
-          and
-          [
-              T=float
-          ]
 c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(89): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
           with
           [
@@ -35,7 +26,7 @@ c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(91): warning C4244: ар
           [
               T=float
           ]
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(101): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
+c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(92): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
           with
           [
               T=unsigned int
@@ -44,12 +35,16 @@ c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(101): warning C4244: а�
           [
               T=float
           ]
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(110): warning C4018: >=: несоответствие типов со знаком и без знака
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(110): warning C4018: <=: несоответствие типов со знаком и без знака
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(468): warning C4244: аргумент: преобразование "float" в "unsigned int", возможна потеря данных
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(480): warning C4244: аргумент: преобразование "float" в "T", возможна потеря данных
+c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(102): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
           with
           [
               T=unsigned int
           ]
+          and
+          [
+              T=float
+          ]
+c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(111): warning C4018: >=: несоответствие типов со знаком и без знака
+c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(111): warning C4018: <=: несоответствие типов со знаком и без знака
+c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(481): warning C4244: аргумент: преобразование "float" в "unsigned int", возможна потеря данных
   Cursach.vcxproj -> C:\Users\luchi\source\repos\Cursach\x64\Debug\Cursach.exe

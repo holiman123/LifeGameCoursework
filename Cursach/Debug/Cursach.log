@@ -1,5 +1,5 @@
 ﻿  Cursach.cpp
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(88): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
+c:\users\luchi\desktop\temp\lifegame\cursach\cursach.cpp(88): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
           with
           [
               T=unsigned int
@@ -8,7 +8,7 @@ c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(88): warning C4244: ар
           [
               T=float
           ]
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(89): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
+c:\users\luchi\desktop\temp\lifegame\cursach\cursach.cpp(89): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
           with
           [
               T=unsigned int
@@ -17,7 +17,7 @@ c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(89): warning C4244: ар
           [
               T=float
           ]
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(90): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
+c:\users\luchi\desktop\temp\lifegame\cursach\cursach.cpp(90): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
           with
           [
               T=unsigned int
@@ -26,7 +26,7 @@ c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(90): warning C4244: ар
           [
               T=float
           ]
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(91): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
+c:\users\luchi\desktop\temp\lifegame\cursach\cursach.cpp(91): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
           with
           [
               T=unsigned int
@@ -35,7 +35,7 @@ c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(91): warning C4244: ар
           [
               T=float
           ]
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(101): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
+c:\users\luchi\desktop\temp\lifegame\cursach\cursach.cpp(101): warning C4244: аргумент: преобразование "T" в "T", возможна потеря данных
           with
           [
               T=unsigned int
@@ -44,17 +44,12 @@ c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(101): warning C4244: а�
           [
               T=float
           ]
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(110): warning C4018: >=: несоответствие типов со знаком и без знака
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(110): warning C4018: <=: несоответствие типов со знаком и без знака
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(154): error C4430: отсутствует спецификатор типа - предполагается int. Примечание. C++ не поддерживает int по умолчанию
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(154): error C2146: синтаксическая ошибка: отсутствие ";" перед идентификатором "openfilename"
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(154): error C2143: синтаксическая ошибка: отсутствие ";" перед "{"
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(154): error C2447: {: отсутствует заголовок функции (возможно, используется формальный список старого типа)
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(177): error C2059: синтаксическая ошибка: (
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(177): error C2143: синтаксическая ошибка: отсутствие ";" перед "{"
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(488): warning C4244: аргумент: преобразование "float" в "unsigned int", возможна потеря данных
-c:\users\luchi\source\repos\cursach\cursach\cursach.cpp(500): warning C4244: аргумент: преобразование "float" в "T", возможна потеря данных
+c:\users\luchi\desktop\temp\lifegame\cursach\cursach.cpp(110): warning C4018: >=: несоответствие типов со знаком и без знака
+c:\users\luchi\desktop\temp\lifegame\cursach\cursach.cpp(110): warning C4018: <=: несоответствие типов со знаком и без знака
+c:\users\luchi\desktop\temp\lifegame\cursach\cursach.cpp(468): warning C4244: аргумент: преобразование "float" в "unsigned int", возможна потеря данных
+c:\users\luchi\desktop\temp\lifegame\cursach\cursach.cpp(480): warning C4244: аргумент: преобразование "float" в "T", возможна потеря данных
           with
           [
               T=unsigned int
           ]
+  Cursach.vcxproj -> C:\Users\luchi\Desktop\temp\LifeGame\Debug\Cursach.exe
