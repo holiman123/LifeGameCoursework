@@ -1,4 +1,6 @@
-﻿#define NOMINMAX
+﻿#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 
 #include <iostream>
 #include <windows.h>
@@ -11,6 +13,8 @@
 #include <array>
 #include <iostream>
 #include <string.h>
+#include <string>
+#include <locale>
 
 static const int fieldSize = 128;
 static bool field[fieldSize][fieldSize];
@@ -63,13 +67,14 @@ public:
 	sf::Color PressedColor;			// button color when pressed
 	sf::Vector2u firstPoint;		// left above poitn
 	sf::Vector2u secondPoint;		// right down point
-	int(*ptrFunction)(bool, bool) = NULL; // pointer to function that calls when button pressed
+	int(*ptrFunction)(bool, bool, bool) = NULL; // pointer to function that calls when button pressed
 	bool isPressedPush = false;
 	bool isPressedToggle = false;
+	bool isTickPush = false;
 	std::string buttonText;			// string on button
 
 	// function that calls whith creating an exemplar
-	bool load(sf::Vector2u m_firstPoint, sf::Vector2u m_secondPoint, sf::Color m_notPressedColor, sf::Color m_PressedColor, std::string m_buttonText, int fontSize, sf::Vector2u textPosition, int(*ptrFunc)(bool, bool))
+	bool load(sf::Vector2u m_firstPoint, sf::Vector2u m_secondPoint, sf::Color m_notPressedColor, sf::Color m_PressedColor, std::string m_buttonText, int fontSize, sf::Vector2u textPosition, int(*ptrFunc)(bool, bool, bool))
 	{
 		// equating values
 		notPressedColor = m_notPressedColor;
@@ -81,7 +86,7 @@ public:
 		//----------------
 
 		// drawing button rectangle by vertices
-		vertices.setPrimitiveType(sf::Quads);
+		vertices.setPrimitiveType(sf::PrimitiveType::Quads);
 		vertices.resize(4);
 
 		vertices[0].position = sf::Vector2f(firstPoint.x, firstPoint.y);
@@ -105,10 +110,12 @@ public:
 	// procces current event
 	void eventProcces(sf::Event m_event)
 	{
+		isTickPush = false;
 		// check if pressed on button
 		if (m_event.type == sf::Event::MouseButtonPressed && m_event.mouseButton.x >= firstPoint.x && m_event.mouseButton.x <= secondPoint.x && m_event.mouseButton.y >= firstPoint.y && m_event.mouseButton.y <= secondPoint.y)
 		{
 			isPressedPush = true;
+			isTickPush = true;
 			isPressedToggle = !isPressedToggle;
 
 			// change button color
@@ -131,31 +138,184 @@ public:
 			vertices[3].color = notPressedColor;
 			//--------------------
 		}
-		ptrFunction(isPressedPush, isPressedToggle); // call custom function for this button
+		ptrFunction(isPressedPush, isPressedToggle, isTickPush); // call custom function for this button
 	}
 
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
 	{
-		states.transform *= getTransform();
+		states.transform *= getTransform();	// transforming
 		target.draw(vertices, states);		// drawing button rectangle
-		target.draw(text);					// -------PROBLEM HERE---------
+		target.draw(text);					// drawing text
 	}
 };
-int lifeButtonStartPressedEvent(bool pushIn, bool toggleIn)
+class TextBox : public sf::Drawable, sf::Transformable
 {
-	if (pushIn)
-		isGameLife = true;
-	return 0;
-}
-int lifeButtonStopPressedEvent(bool pushIn, bool toggleIn)
-{
-	if (pushIn)
-		isGameLife = false;
-	return 0;
-}
-//-------------------------
+private:
+	sf::VertexArray vertices;	// field of text box
+	Text text;					// text of text box
+public:
+	sf::Color activeColor;		// color when active
+	sf::Color noActiveColor;	// color when not active
+	std::string stringText;		// string of text in box
+	sf::Vector2f firstPoint;
+	sf::Vector2f secondPoint;
+	int textSize = 16;
 
-//-------------------------
+	bool isActive = false;
+
+	bool load(sf::Vector2f m_firstPoint,sf::Vector2f m_secondPoint, sf::Color m_activeColor, sf::Color m_noActiveColor, std::string startText, int m_textSize, sf::Vector2f textOffset)
+	{
+		//equalating variables:
+		activeColor = m_activeColor;
+		noActiveColor = m_noActiveColor;
+		stringText = startText;
+		firstPoint = m_firstPoint;
+		secondPoint = m_secondPoint;
+		textSize = m_textSize;
+		//---------------------
+
+		//drawing rectangle:
+		vertices.setPrimitiveType(sf::PrimitiveType::Quads);
+		vertices.resize(4);
+
+		vertices[0].position = firstPoint;
+		vertices[1].position = sf::Vector2f(firstPoint.x, secondPoint.y);
+		vertices[2].position = secondPoint;
+		vertices[3].position = sf::Vector2f(secondPoint.x, firstPoint.y);
+
+		//coloring:
+		vertices[0].color = noActiveColor;
+		vertices[1].color = noActiveColor;
+		vertices[2].color = noActiveColor;
+		vertices[3].color = noActiveColor;
+
+		// setting text:
+		text = Text(stringText, textSize);
+		text.setPosition(((firstPoint.x + secondPoint.x) / 2) + textOffset.x, ((firstPoint.y + secondPoint.y) / 2) + textOffset.y);
+
+		return true;
+	}
+
+	void eventProces(sf::Event m_event)
+	{
+		if (m_event.type == sf::Event::MouseButtonPressed)	// when pressed somewhere NOT on the text box → unActive this shit
+		{
+			isActive = false;
+
+			vertices[0].color = noActiveColor;
+			vertices[1].color = noActiveColor;
+			vertices[2].color = noActiveColor;
+			vertices[3].color = noActiveColor;
+		}
+		// When pressed on the text → active this shit
+		if (m_event.type == sf::Event::MouseButtonPressed && m_event.mouseButton.x >= firstPoint.x && m_event.mouseButton.y >= firstPoint.y && m_event.mouseButton.x <= secondPoint.x && m_event.mouseButton.y <= secondPoint.y)
+		{
+			isActive = true;
+
+			vertices[0].color = activeColor;
+			vertices[1].color = activeColor;
+			vertices[2].color = activeColor;
+			vertices[3].color = activeColor;
+		}
+		if (isActive && m_event.type == sf::Event::TextEntered)		// When active and text keys pressed → write that shit down
+		{
+			if (m_event.text.unicode == '\b' && stringText != "")
+			{
+				stringText.erase(stringText.size() - 1, 1);
+			}
+			if (m_event.text.unicode != '\b' && stringText.size() < 16)
+			{
+				stringText += static_cast<char>(m_event.text.unicode);
+			}
+			text = Text(stringText, textSize);
+		}
+		if (isActive && m_event.type == sf::Event::KeyPressed && m_event.key.code == sf::Keyboard::Enter) // when 'Enter' pressed → unActive this shit
+		{
+			isActive = false;
+
+			vertices[0].color = noActiveColor;
+			vertices[1].color = noActiveColor;
+			vertices[2].color = noActiveColor;
+			vertices[3].color = noActiveColor;
+		}
+	}
+
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
+	{
+		states.transform *= getTransform();	// transforming
+		target.draw(vertices, states);		// drawing button rectangle
+		target.draw(text);					// drawing text
+	}
+};
+class ColorIndicator : public sf::Drawable, sf::Transformable
+{
+private:
+
+	sf::VertexArray vertices;
+
+public:
+
+	sf::Vector2f firstPoint;
+	sf::Vector2f secondPoint;
+	bool indicatorState = false;
+
+	bool load(sf::Vector2f m_firstPoint, sf::Vector2f m_secondPoint, bool startState)
+	{
+		firstPoint = m_firstPoint;
+		secondPoint = m_secondPoint;
+		indicatorState = startState;
+
+		vertices.setPrimitiveType(sf::Quads);
+		vertices.resize(4);
+
+		vertices[0].position = firstPoint;
+		vertices[1].position = sf::Vector2f(firstPoint.x, secondPoint.y);
+		vertices[2].position = secondPoint;
+		vertices[3].position = sf::Vector2f(secondPoint.x, firstPoint.y);
+
+		if (indicatorState)
+		{
+			vertices[0].color = sf::Color(20, 140, 20);
+			vertices[1].color = sf::Color(20, 140, 20);
+			vertices[2].color = sf::Color(20, 140, 20);
+			vertices[3].color = sf::Color(20, 140, 20);
+		}
+		else
+		{
+			vertices[0].color = sf::Color(140, 20, 20);
+			vertices[1].color = sf::Color(140, 20, 20);
+			vertices[2].color = sf::Color(140, 20, 20);
+			vertices[3].color = sf::Color(140, 20, 20);
+		}
+		return 0;
+	}
+
+	void update(bool newState)
+	{
+		indicatorState = newState;
+		if (indicatorState)
+		{
+			vertices[0].color = sf::Color(20, 140, 20);
+			vertices[1].color = sf::Color(20, 140, 20);
+			vertices[2].color = sf::Color(20, 140, 20);
+			vertices[3].color = sf::Color(20, 140, 20);
+		}
+		else
+		{
+			vertices[0].color = sf::Color(140, 20, 20);
+			vertices[1].color = sf::Color(140, 20, 20);
+			vertices[2].color = sf::Color(140, 20, 20);
+			vertices[3].color = sf::Color(140, 20, 20);
+		}
+	}
+
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
+	{
+		states.transform *= getTransform();	// transforming
+		target.draw(vertices, states);		// drawing button rectangle
+	}
+};
+
 void clearField()
 {
 	for (int i = 0; i < fieldSize; i++)
@@ -163,7 +323,20 @@ void clearField()
 			field[i][j] = false;
 }
 
-int LoadButtonPressedEvent(bool pushIn, bool toggleIn)
+int lifeButtonStartPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
+{
+	if (tickPush)
+		isGameLife = true;
+
+	return 0;
+}
+int lifeButtonStopPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
+{
+	if (tickPush)
+		isGameLife = false;
+	return 0;
+}
+int LoadButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 {
 	if (pushIn)
 	{
@@ -172,9 +345,14 @@ int LoadButtonPressedEvent(bool pushIn, bool toggleIn)
 
 	return 0;
 }
-int helpButtonPressedEvent(bool pushIn, bool toggleIn)
+int SaveButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 {
-	if (pushIn)
+
+	return 0;
+}
+int helpButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
+{
+	if (tickPush)
 	{
 		isHelpActive = !isHelpActive;
 		clearField();
@@ -462,22 +640,6 @@ void turn()
 	}
 }
 
-/*void showConsoleField(bool ptr[][fieldSize])
-{
-	for (int i = 0; i < fieldSize; i++)
-	{
-		for (int j = 0; j < fieldSize; j++)
-		{
-			if (ptr[i][j])
-				cout << 8 << " ";
-			else
-				cout << "." << " ";
-		}
-		cout << "\n";
-	}
-	cout << "\n";
-}*/
-
 void showGraphField(bool ptr[][fieldSize], int fps)
 {
 	sf::Text helpText;
@@ -563,7 +725,7 @@ void showControlPanel()
 	//sf::ContextSettings settings;
 	//settings.antialiasingLevel = 4;
 
-	controlWindow.create(sf::VideoMode(300, 200), "Life control panel", sf::Style::Titlebar | sf::Style::Close);
+	controlWindow.create(sf::VideoMode(400, 200), "Life control panel", sf::Style::Titlebar | sf::Style::Close);
 	controlWindow.clear(sf::Color(255, 230, 185, 0));
 	controlWindow.setVerticalSyncEnabled(true);
 	controlWindow.setFramerateLimit(120);
@@ -580,6 +742,12 @@ void showControlPanel()
 	//RuleButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Life Button", 25, sf::Vector2u(15, 20), &lifeButtonPressedEvent);
 	Button helpButton;
 	helpButton.load(sf::Vector2u(170, 10), sf::Vector2u(230, 40), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "help", 18, sf::Vector2u(185, 13), &helpButtonPressedEvent);
+	TextBox loadedOrganismNameTextBox;
+	loadedOrganismNameTextBox.load(sf::Vector2f(170, 50), sf::Vector2f(320, 80), sf::Color(180, 180, 180), sf::Color(130, 130, 130), "load organism name", 16, sf::Vector2f(-70, -9));
+	ColorIndicator lifeIndicator1;
+	lifeIndicator1.load(sf::Vector2f(140, 10), sf::Vector2f(150, 75), false);
+	ColorIndicator lifeIndicator2;
+	lifeIndicator2.load(sf::Vector2f(140, 80), sf::Vector2f(150, 145), false);
 
 	while (controlWindow.isOpen())
 	{
@@ -592,6 +760,9 @@ void showControlPanel()
 			//LoadButton.eventProcces(event);
 			//RuleButton.eventProcces(event);
 			helpButton.eventProcces(event);
+			loadedOrganismNameTextBox.eventProces(event);
+			lifeIndicator1.update(isGameLife);
+			lifeIndicator2.update(isGameLife);
 
 			if (event.type == sf::Event::Closed) {
 				controlWindow.close();
@@ -601,11 +772,14 @@ void showControlPanel()
 				//cout << event.mouseButton.x << " " << event.mouseButton.y << "\n";
 		}
 
-		///////////////////
+		/////////////////// drawing stuff
 		controlWindow.draw(LifeStartButton);
 		controlWindow.draw(LifeStopButton);
 		//controlWindow.draw(LoadButton);
 		controlWindow.draw(helpButton);
+		controlWindow.draw(loadedOrganismNameTextBox);
+		controlWindow.draw(lifeIndicator1);
+		controlWindow.draw(lifeIndicator2);
 		///////////////////
 
 		controlWindow.display();
@@ -613,21 +787,10 @@ void showControlPanel()
 	}
 }
 
-/*void consoleOutput(int times, int ms)
-{
-	for (int i = 0; i < times; i++)
-	{
-		Sleep(ms);
-
-		showConsoleField(field);
-		turn();
-	}
-}*/
-
 int main()
 {
-	HWND hWnd = GetConsoleWindow();
-	ShowWindow(hWnd, SW_HIDE);
+	//HWND hWnd = GetConsoleWindow();
+	//ShowWindow(hWnd, SW_HIDE);
 
 	//cout << "Hello World!\n";
 
@@ -638,6 +801,12 @@ int main()
 	Sleep(200);
 	std::thread thr(showControlPanel);
 	//thr.detach();
+
+
+
+	//--------------------------------		temp
+	
+	//--------------------------------
 
 	std::cin.get();
 }
