@@ -48,7 +48,7 @@ public:
 	}
 	Text() { }
 
-	virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const {
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const {
 		states.transform *= getTransform();
 		target.draw(text, states);
 	}
@@ -657,6 +657,7 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 
 	windowMain.clear(sf::Color(255, 230, 185, 0));
 	sf::Event event;
+	bool setTo = false;
 	while (windowMain.isOpen())
 	{
 		while (windowMain.pollEvent(event))
@@ -666,9 +667,19 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 				exit(1);
 			}
 
-			if (event.type == sf::Event::MouseButtonPressed && !isGameLife)
+			if (event.type == sf::Event::MouseButtonPressed && !isGameLife && sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
-				ptr[event.mouseButton.x / (windowMain.getSize().x / fieldSize)][event.mouseButton.y / (windowMain.getSize().y / fieldSize)] = !ptr[event.mouseButton.x / (windowMain.getSize().x / fieldSize)][event.mouseButton.y / (windowMain.getSize().y / fieldSize)];
+				setTo = !ptr[event.mouseButton.x / (windowMain.getSize().x / fieldSize)][event.mouseButton.y / (windowMain.getSize().y / fieldSize)];
+			}
+			if (!isGameLife && sf::Mouse::isButtonPressed(sf::Mouse::Left))
+			{
+				sf::Vector2i pos = sf::Mouse::getPosition(windowMain);
+				if(pos.x > 0 && pos.x < fieldSize*cellSize)
+					if (pos.y > 0 && pos.y < fieldSize * cellSize)
+					{
+						windowMain.requestFocus();
+						ptr[pos.x / (windowMain.getSize().x / fieldSize)][pos.y / (windowMain.getSize().y / fieldSize)] = setTo;
+					}
 			}
 			if (event.type == sf::Event::MouseButtonPressed)
 			{
