@@ -28,6 +28,11 @@ static sf::VertexArray quads;
 static sf::VertexBuffer buffer(sf::Quads);
 int clockStart;
 
+struct AbleCharsStruct
+{
+	int ableChars[128];
+};
+
 class Text : public sf::Drawable, public sf::Transformable
 {
 	sf::Font font;
@@ -159,7 +164,10 @@ public:
 	std::string stringText;		// string of text in box
 	sf::Vector2f firstPoint;
 	sf::Vector2f secondPoint;
+	AbleCharsStruct ableChars;
+	int(*ptrTextBoxEndEvent)(std::string newText) = NULL;
 	int textSize = 16;
+	bool isEverPressed = false;
 
 	bool isActive = false;
 
@@ -198,18 +206,16 @@ public:
 
 	void eventProces(sf::Event m_event)
 	{
-		if (m_event.type == sf::Event::MouseButtonPressed)	// when pressed somewhere NOT on the text box → unActive this shit
-		{
-			isActive = false;
-
-			vertices[0].color = noActiveColor;
-			vertices[1].color = noActiveColor;
-			vertices[2].color = noActiveColor;
-			vertices[3].color = noActiveColor;
-		}
+		
 		// When pressed on the text → active this shit
 		if (m_event.type == sf::Event::MouseButtonPressed && m_event.mouseButton.x >= firstPoint.x && m_event.mouseButton.y >= firstPoint.y && m_event.mouseButton.x <= secondPoint.x && m_event.mouseButton.y <= secondPoint.y)
 		{
+			if (isEverPressed == false)
+			{
+				isEverPressed = true;
+				stringText = "";
+				text = Text(stringText, textSize);
+			}
 			isActive = true;
 
 			vertices[0].color = activeColor;
@@ -223,12 +229,23 @@ public:
 			{
 				stringText.erase(stringText.size() - 1, 1);
 			}
-			if (m_event.text.unicode != '\b' && stringText.size() < 16)
+			if (m_event.text.unicode != '\b' && stringText.size() < 16 && ableChars.ableChars[0] == NULL)
 			{
 				stringText += static_cast<char>(m_event.text.unicode);
 			}
+			if (m_event.text.unicode != '\b' && stringText.size() < 16 && ableChars.ableChars[0] != NULL)
+			{
+				int i = 0;
+				while (ableChars.ableChars[i] != NULL)
+				{
+					if(ableChars.ableChars[i] == static_cast<char>(m_event.text.unicode))
+						stringText += static_cast<char>(m_event.text.unicode);
+					i++;
+				}
+			}
 			text = Text(stringText, textSize);
 		}
+
 		if (isActive && m_event.type == sf::Event::KeyPressed && m_event.key.code == sf::Keyboard::Enter) // when 'Enter' pressed → unActive this shit
 		{
 			isActive = false;
@@ -237,6 +254,22 @@ public:
 			vertices[1].color = noActiveColor;
 			vertices[2].color = noActiveColor;
 			vertices[3].color = noActiveColor;
+
+			if(stringText != "" && ptrTextBoxEndEvent != NULL)
+				ptrTextBoxEndEvent(stringText);
+		}
+		// when pressed somewhere NOT on the text box → unActive this shit
+		if (m_event.type == sf::Event::MouseButtonPressed && (m_event.mouseButton.x < firstPoint.x || m_event.mouseButton.y < firstPoint.y || m_event.mouseButton.x > secondPoint.x || m_event.mouseButton.y > secondPoint.y))
+		{
+			isActive = false;
+
+			vertices[0].color = noActiveColor;
+			vertices[1].color = noActiveColor;
+			vertices[2].color = noActiveColor;
+			vertices[3].color = noActiveColor;
+
+			//if (stringText != "" && ptrTextBoxEndEvent != NULL)
+				//ptrTextBoxEndEvent(stringText);
 		}
 	}
 
@@ -358,6 +391,11 @@ int helpButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 		clearField();
 		isGameLife = false;
 	}
+	return 0;
+}
+int simSpeedTextBoxEndEvent(std::string newText)
+{
+	simSpeed = std::stoi(newText);
 	return 0;
 }
 
@@ -652,7 +690,7 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
-	windowMain.create(sf::VideoMode(fieldSize*cellSize + 1, fieldSize*cellSize + 1), "Hellow world!", sf::Style::Titlebar | sf::Style::Close, settings);
+	windowMain.create(sf::VideoMode(fieldSize*cellSize, fieldSize*cellSize), "Hellow world!", sf::Style::Titlebar | sf::Style::Close, settings);
 	windowMain.setFramerateLimit(60);
 
 	windowMain.clear(sf::Color(255, 230, 185, 0));
@@ -755,6 +793,21 @@ void showControlPanel()
 	helpButton.load(sf::Vector2u(170, 10), sf::Vector2u(230, 40), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "help", 18, sf::Vector2u(185, 13), &helpButtonPressedEvent);
 	TextBox loadedOrganismNameTextBox;
 	loadedOrganismNameTextBox.load(sf::Vector2f(170, 50), sf::Vector2f(320, 80), sf::Color(180, 180, 180), sf::Color(130, 130, 130), "load organism name", 16, sf::Vector2f(-70, -9));
+	TextBox simSpeedTextBox;
+	simSpeedTextBox.ptrTextBoxEndEvent = &simSpeedTextBoxEndEvent;
+	simSpeedTextBox.load(sf::Vector2f(170, 90), sf::Vector2f(320, 120), sf::Color(180, 180, 180), sf::Color(130, 130, 130), "sim speed", 17, sf::Vector2f(-60, -10));
+	AbleCharsStruct intCharsAble;
+	intCharsAble.ableChars[0] = '0';
+	intCharsAble.ableChars[1] = '1';
+	intCharsAble.ableChars[2] = '2';
+	intCharsAble.ableChars[3] = '3';
+	intCharsAble.ableChars[4] = '4';
+	intCharsAble.ableChars[5] = '5';
+	intCharsAble.ableChars[6] = '6';
+	intCharsAble.ableChars[7] = '7';
+	intCharsAble.ableChars[8] = '8';
+	intCharsAble.ableChars[9] = '9';
+	simSpeedTextBox.ableChars = intCharsAble;
 	ColorIndicator lifeIndicator1;
 	lifeIndicator1.load(sf::Vector2f(140, 10), sf::Vector2f(150, 75), false);
 	ColorIndicator lifeIndicator2;
@@ -772,6 +825,7 @@ void showControlPanel()
 			//RuleButton.eventProcces(event);
 			helpButton.eventProcces(event);
 			loadedOrganismNameTextBox.eventProces(event);
+			simSpeedTextBox.eventProces(event);
 			lifeIndicator1.update(isGameLife);
 			lifeIndicator2.update(isGameLife);
 
@@ -791,6 +845,7 @@ void showControlPanel()
 		controlWindow.draw(loadedOrganismNameTextBox);
 		controlWindow.draw(lifeIndicator1);
 		controlWindow.draw(lifeIndicator2);
+		controlWindow.draw(simSpeedTextBox);
 		///////////////////
 
 		controlWindow.display();
