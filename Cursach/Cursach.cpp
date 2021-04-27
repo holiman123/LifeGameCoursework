@@ -16,48 +16,54 @@
 #include <string>
 #include <locale>
 
-static const int fieldSize = 64;
-static bool field[fieldSize][fieldSize];
-static bool isGameLife = false;
-static bool isHelpActive = true;
-static const float cellSize = 16;
-static int simSpeed = 60;
-static sf::RenderWindow windowMain;
-static sf::RenderWindow controlWindow;
-static sf::VertexArray quads;
-static sf::VertexBuffer buffer(sf::Quads);
-static std::string loadFileName;
+static const int fieldSize = 64;			// size of game field
+static bool field[fieldSize][fieldSize];	// field array of bool
+static bool isGameLife = false;				// boolean - is the game running
+static bool isHelpActive = true;			// boolean - is need to show help text
+static const float cellSize = 16;			// size of one cell in pixels
+static int simSpeed = 60;					// delay in one turn function
+static sf::RenderWindow windowMain;			// main window 
+static sf::RenderWindow controlWindow;		// graph window
+static sf::VertexArray quads;				// array of all vertices
+static sf::VertexBuffer buffer(sf::Quads);	// buffer for vertices
+static std::string loadFileName;			// text in loadFileTextBox
 
 struct AbleCharsStruct
 {
 	int ableChars[128];
-};
+};	// struct to transfer able chars
 
+// class of text to draw in windows
 class Text : public sf::Drawable, public sf::Transformable
 {
-	sf::Font font;
-	sf::Text text;
+	sf::Font font;	// font of text
+	sf::Text text;	// standart text in sfml
 public:
 
+	// override '=' operator:
 	Text& operator=(Text other) {
-		font = other.font;
-		text = other.text;
+		font = other.font;	// equal font
+		text = other.text;	// equal text
 		text.setFont(font);
 		return *this;
 	}
 
+	// constructor:
 	Text(std::string string, int fontSize) {
-		if (!font.loadFromFile("arial.ttf")) // Nothing wrong with loading the font
-			std::exit(-1);
-		text = sf::Text(string, font, fontSize);
+		if (!font.loadFromFile("arial.ttf"))		// Nothing wrong with loading the font
+			std::exit(-1);							// exit programm
+		text = sf::Text(string, font, fontSize);	// setting default string to draw
 	}
+	// empty constructor:
 	Text() { }
 
+	// virtual draw function (draw in window)
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const {
 		states.transform *= getTransform();
 		target.draw(text, states);
 	}
 };
+// class of button
 class Button : public sf::Drawable, public sf::Transformable
 {
 
@@ -73,9 +79,9 @@ public:
 	sf::Vector2u firstPoint;		// left above poitn
 	sf::Vector2u secondPoint;		// right down point
 	int(*ptrFunction)(bool, bool, bool) = NULL; // pointer to function that calls when button pressed
-	bool isPressedPush = false;
-	bool isPressedToggle = false;
-	bool isTickPush = false;
+	bool isPressedPush = false;		// is button pressed
+	bool isPressedToggle = false;	// toggle by pressing button
+	bool isTickPush = false;		// one tick on pressed button
 	std::string buttonText;			// string on button
 
 	// function that calls whith creating an exemplar
@@ -91,14 +97,16 @@ public:
 		//----------------
 
 		// drawing button rectangle by vertices
-		vertices.setPrimitiveType(sf::PrimitiveType::Quads);
-		vertices.resize(4);
+		vertices.setPrimitiveType(sf::PrimitiveType::Quads); // set rectangle type to array
+		vertices.resize(4);	// size each rectangle to 4, because of 4 vertices
 
+		// settig position to each vertex
 		vertices[0].position = sf::Vector2f(firstPoint.x, firstPoint.y);
 		vertices[1].position = sf::Vector2f(firstPoint.x, secondPoint.y);
 		vertices[2].position = sf::Vector2f(secondPoint.x, secondPoint.y);
 		vertices[3].position = sf::Vector2f(secondPoint.x, firstPoint.y);
 
+		// setting color for each vertex
 		vertices[0].color = m_notPressedColor;
 		vertices[1].color = m_notPressedColor;
 		vertices[2].color = m_notPressedColor;
@@ -146,6 +154,7 @@ public:
 		ptrFunction(isPressedPush, isPressedToggle, isTickPush); // call custom function for this button
 	}
 
+	// draw in window
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
 	{
 		states.transform *= getTransform();	// transforming
@@ -153,6 +162,7 @@ public:
 		target.draw(text);					// drawing text
 	}
 };
+// class of textBox
 class TextBox : public sf::Drawable, sf::Transformable
 {
 private:
@@ -162,15 +172,16 @@ public:
 	sf::Color activeColor;		// color when active
 	sf::Color noActiveColor;	// color when not active
 	std::string stringText;		// string of text in box
-	sf::Vector2f firstPoint;
-	sf::Vector2f secondPoint;
-	AbleCharsStruct ableChars;
-	int(*ptrTextBoxEndEvent)(std::string newText) = NULL;
-	int textSize = 16;
-	bool isEverPressed = false;
+	sf::Vector2f firstPoint;	// first position point 
+	sf::Vector2f secondPoint;	// second position point
+	AbleCharsStruct ableChars;	// struct to set able chars to write
+	int(*ptrTextBoxEndEvent)(std::string newText) = NULL;	// pointer to user function when editing end
+	int textSize = 16;			// standart text size
+	bool isEverPressed = false;	// bollean is ever button pressed
 
-	bool isActive = false;
+	bool isActive = false;		// is text box active now
 
+	// constructor:
 	bool load(sf::Vector2f m_firstPoint,sf::Vector2f m_secondPoint, sf::Color m_activeColor, sf::Color m_noActiveColor, std::string startText, int m_textSize, sf::Vector2f textOffset)
 	{
 		//equalating variables:
@@ -186,12 +197,13 @@ public:
 		vertices.setPrimitiveType(sf::PrimitiveType::Quads);
 		vertices.resize(4);
 
+		// setting vertices to position
 		vertices[0].position = firstPoint;
 		vertices[1].position = sf::Vector2f(firstPoint.x, secondPoint.y);
 		vertices[2].position = secondPoint;
 		vertices[3].position = sf::Vector2f(secondPoint.x, firstPoint.y);
 
-		//coloring:
+		//setting color to vertices:
 		vertices[0].color = noActiveColor;
 		vertices[1].color = noActiveColor;
 		vertices[2].color = noActiveColor;
@@ -199,7 +211,7 @@ public:
 
 		// setting text:
 		text = Text(stringText, textSize);
-		text.setPosition(((firstPoint.x + secondPoint.x) / 2) + textOffset.x, ((firstPoint.y + secondPoint.y) / 2) + textOffset.y);
+		text.setPosition(((firstPoint.x + secondPoint.x) / 2) + textOffset.x, ((firstPoint.y + secondPoint.y) / 2) + textOffset.y); // text position
 
 		return true;
 	}
@@ -207,9 +219,10 @@ public:
 	void eventProces(sf::Event m_event)
 	{
 		
-		// When pressed on the text → active this shit
+		// When pressed on the text → active this text box
 		if (m_event.type == sf::Event::MouseButtonPressed && m_event.mouseButton.x >= firstPoint.x && m_event.mouseButton.y >= firstPoint.y && m_event.mouseButton.x <= secondPoint.x && m_event.mouseButton.y <= secondPoint.y)
 		{
+			// if pressed firstly - clear text box
 			if (isEverPressed == false)
 			{
 				isEverPressed = true;
@@ -218,51 +231,54 @@ public:
 			}
 			isActive = true;
 
+			// set active color
 			vertices[0].color = activeColor;
 			vertices[1].color = activeColor;
 			vertices[2].color = activeColor;
 			vertices[3].color = activeColor;
 		}
-		if (isActive && m_event.type == sf::Event::TextEntered)		// When active and text keys pressed → write that shit down
+		if (isActive && m_event.type == sf::Event::TextEntered)		// When active and text keys pressed → write it to text box
 		{
-			if (m_event.text.unicode == '\b' && stringText != "")
+			if (m_event.text.unicode == '\b' && stringText != "") // if text is not empty, so we can remove last symbol
 			{
-				stringText.erase(stringText.size() - 1, 1);
+				stringText.erase(stringText.size() - 1, 1); // remove last symbol
 			}
-			if (m_event.text.unicode != '\b' && stringText.size() < 16 && ableChars.ableChars[0] == NULL)
+			if (m_event.text.unicode != '\b' && stringText.size() < 16 && ableChars.ableChars[0] == NULL) // if text less than 16, so we can add new symbol (if all chars able)
 			{
-				stringText += static_cast<char>(m_event.text.unicode);
+				stringText += static_cast<char>(m_event.text.unicode); // add new symbol
 			}
-			if (m_event.text.unicode != '\b' && stringText.size() < 16 && ableChars.ableChars[0] != NULL)
+			if (m_event.text.unicode != '\b' && stringText.size() < 16 && ableChars.ableChars[0] != NULL) // if text less than 16, so we can add new symbol (if NOT all chars able)
 			{
 				int i = 0;
-				while (ableChars.ableChars[i] != NULL)
+				while (ableChars.ableChars[i] != NULL) // itarate all able symbols 
 				{
-					if(ableChars.ableChars[i] == static_cast<char>(m_event.text.unicode))
-						stringText += static_cast<char>(m_event.text.unicode);
+					if(ableChars.ableChars[i] == static_cast<char>(m_event.text.unicode))	// check if writen symbol able
+						stringText += static_cast<char>(m_event.text.unicode);				// add this symble
 					i++;
 				}
 			}
-			text = Text(stringText, textSize);
+			text = Text(stringText, textSize);	// add text to draw
 		}
 
 		if (isActive && m_event.type == sf::Event::KeyPressed && m_event.key.code == sf::Keyboard::Enter) // when 'Enter' pressed → unActive this shit
 		{
 			isActive = false;
 
+			// set no active color:
 			vertices[0].color = noActiveColor;
 			vertices[1].color = noActiveColor;
 			vertices[2].color = noActiveColor;
 			vertices[3].color = noActiveColor;
 
-			if(stringText != "" && ptrTextBoxEndEvent != NULL)
-				ptrTextBoxEndEvent(stringText);
+			if(stringText != "" && ptrTextBoxEndEvent != NULL)	// if we can call user function
+				ptrTextBoxEndEvent(stringText);					// call user function
 		}
 		// when pressed somewhere NOT on the text box → unActive this shit
 		if (m_event.type == sf::Event::MouseButtonPressed && (m_event.mouseButton.x < firstPoint.x || m_event.mouseButton.y < firstPoint.y || m_event.mouseButton.x > secondPoint.x || m_event.mouseButton.y > secondPoint.y))
 		{
 			isActive = false;
 
+			// set no active color
 			vertices[0].color = noActiveColor;
 			vertices[1].color = noActiveColor;
 			vertices[2].color = noActiveColor;
@@ -273,6 +289,7 @@ public:
 		}
 	}
 
+	// virtual draw function
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
 	{
 		states.transform *= getTransform();	// transforming
@@ -280,16 +297,17 @@ public:
 		target.draw(text);					// drawing text
 	}
 };
+// class of indicator to show bool value
 class ColorIndicator : public sf::Drawable, sf::Transformable
 {
 private:
 
-	sf::VertexArray vertices;
+	sf::VertexArray vertices;	// color indicator vertices array
 
 public:
 
-	sf::Vector2f firstPoint;
-	sf::Vector2f secondPoint;
+	sf::Vector2f firstPoint;	// first position point
+	sf::Vector2f secondPoint;	// second position point
 	bool indicatorState = false;
 
 	bool load(sf::Vector2f m_firstPoint, sf::Vector2f m_secondPoint, bool startState)
@@ -394,7 +412,8 @@ int LoadButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 			}
 			std::cout << organismBuffer;
 		}
-		//temp else
+		//to save new struct :
+		/*
 		else
 		{
 			for (int i = 0; i < fieldSize; i++)
@@ -406,6 +425,7 @@ int LoadButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 				std::cout << "\n";
 			}
 		}
+		*/
 	}
 
 	return 0;

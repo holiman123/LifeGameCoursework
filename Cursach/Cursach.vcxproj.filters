@@ -34,5 +34,11 @@
     <Text Include="Gun.txt">
       <Filter>Исходные файлы\Organisms</Filter>
     </Text>
+    <Text Include="Spaceship.txt">
+      <Filter>Исходные файлы\Organisms</Filter>
+    </Text>
+    <Text Include="Pulsar.txt">
+      <Filter>Исходные файлы\Organisms</Filter>
+    </Text>
   </ItemGroup>
 </Project>

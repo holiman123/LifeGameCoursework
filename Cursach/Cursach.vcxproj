@@ -177,6 +177,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Gun.txt" />
+    <Text Include="Pulsar.txt" />
+    <Text Include="Spaceship.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
