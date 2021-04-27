@@ -11,22 +11,22 @@
 #include <math.h>
 #include <vector>
 #include <array>
-#include <iostream>
+#include <fstream>
 #include <string.h>
 #include <string>
 #include <locale>
 
-static const int fieldSize = 128;
+static const int fieldSize = 64;
 static bool field[fieldSize][fieldSize];
 static bool isGameLife = false;
 static bool isHelpActive = true;
-static const float cellSize = 8;
+static const float cellSize = 16;
 static int simSpeed = 60;
 static sf::RenderWindow windowMain;
 static sf::RenderWindow controlWindow;
 static sf::VertexArray quads;
 static sf::VertexBuffer buffer(sf::Quads);
-int clockStart;
+static std::string loadFileName;
 
 struct AbleCharsStruct
 {
@@ -371,9 +371,41 @@ int lifeButtonStopPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 }
 int LoadButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 {
-	if (pushIn)
+	if (tickPush && !isGameLife && loadFileName != "")
 	{
-
+		std::ifstream organismFile;
+		organismFile.open(loadFileName + ".txt");
+		std::string organismBuffer;
+		std::string organismLineBuffer;
+		int j = 0;
+		if (organismFile.is_open())
+		{
+			while (std::getline(organismFile, organismLineBuffer))
+			{
+				if(organismLineBuffer.size() <= fieldSize)
+					for (int i = 0; i < fieldSize; i++)
+					{
+						if (organismLineBuffer[i] == '0')
+							field[i][j] = false;
+						if (organismLineBuffer[i] == '1')
+							field[i][j] = true;
+					}
+				j++;
+			}
+			std::cout << organismBuffer;
+		}
+		//temp else
+		else
+		{
+			for (int i = 0; i < fieldSize; i++)
+			{
+				for (int j = 0; j < fieldSize; j++)
+				{
+					std::cout << field[j][i];
+				}
+				std::cout << "\n";
+			}
+		}
 	}
 
 	return 0;
@@ -682,6 +714,7 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 {
 	sf::Text helpText;
 	sf::Font font; font.loadFromFile("arial.TTF");
+	helpText.setCharacterSize(cellSize*fieldSize / 35);
 	helpText.setFont(font);
 	helpText.setString("\t\tHELLO! this is Conway's Game of Life!\n\nto start your game you need to draw first generation of cells on gray window\nusing mouse control.\n\nTo calculate next generations you need to press \"Life Button\"\nin another window.\n\nYou can stop simulation anytime you want to draw or remove cells from field.\n\nEnjoy!");
 
@@ -696,6 +729,8 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 	windowMain.clear(sf::Color(255, 230, 185, 0));
 	sf::Event event;
 	bool setTo = false;
+	quads.setPrimitiveType(sf::Quads);
+	quads.resize(fieldSize * fieldSize * 4);
 	while (windowMain.isOpen())
 	{
 		while (windowMain.pollEvent(event))
@@ -724,11 +759,6 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 				isHelpActive = false;
 			}
 		}
-
-		clockStart = clock();
-
-		quads.setPrimitiveType(sf::Quads);
-		quads.resize(fieldSize*fieldSize * 4);
 
 		//-
 		for (int i = 0; i < fieldSize; i++)
@@ -785,17 +815,15 @@ void showControlPanel()
 	LifeStartButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Start Life", 25, sf::Vector2u(15, 20), &lifeButtonStartPressedEvent);
 	Button LifeStopButton;
 	LifeStopButton.load(sf::Vector2u(10, 80), sf::Vector2u(150, 145), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Stop Life", 25, sf::Vector2u(15, 95), &lifeButtonStopPressedEvent);
-	//Button LoadButton;
-	//LoadButton.load(sf::Vector2u(10, 85), sf::Vector2u(150, 150), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Load organism (Not work yet)", 20, sf::Vector2u(15, 95), &LoadButtonPressedEvent);
-	//Button RuleButton;
-	//RuleButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Life Button", 25, sf::Vector2u(15, 20), &lifeButtonPressedEvent);
+	Button LoadButton;
+	LoadButton.load(sf::Vector2u(170, 90), sf::Vector2u(320, 120), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Load organism", 16, sf::Vector2u(190, 95), &LoadButtonPressedEvent);
 	Button helpButton;
 	helpButton.load(sf::Vector2u(170, 10), sf::Vector2u(230, 40), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "help", 18, sf::Vector2u(185, 13), &helpButtonPressedEvent);
 	TextBox loadedOrganismNameTextBox;
 	loadedOrganismNameTextBox.load(sf::Vector2f(170, 50), sf::Vector2f(320, 80), sf::Color(180, 180, 180), sf::Color(130, 130, 130), "load organism name", 16, sf::Vector2f(-70, -9));
 	TextBox simSpeedTextBox;
 	simSpeedTextBox.ptrTextBoxEndEvent = &simSpeedTextBoxEndEvent;
-	simSpeedTextBox.load(sf::Vector2f(170, 90), sf::Vector2f(320, 120), sf::Color(180, 180, 180), sf::Color(130, 130, 130), "sim speed", 17, sf::Vector2f(-60, -10));
+	simSpeedTextBox.load(sf::Vector2f(170, 130), sf::Vector2f(320, 160), sf::Color(180, 180, 180), sf::Color(130, 130, 130), "sim speed", 17, sf::Vector2f(-60, -10));
 	AbleCharsStruct intCharsAble;
 	intCharsAble.ableChars[0] = '0';
 	intCharsAble.ableChars[1] = '1';
@@ -815,14 +843,14 @@ void showControlPanel()
 
 	while (controlWindow.isOpen())
 	{
+		loadFileName = loadedOrganismNameTextBox.stringText;
 		controlWindow.clear(sf::Color(255, 230, 185, 0));
 		while (controlWindow.pollEvent(event))
 		{
 			// transfer event to exemplar's methods
 			LifeStartButton.eventProcces(event);
 			LifeStopButton.eventProcces(event);
-			//LoadButton.eventProcces(event);
-			//RuleButton.eventProcces(event);
+			LoadButton.eventProcces(event);
 			helpButton.eventProcces(event);
 			loadedOrganismNameTextBox.eventProces(event);
 			simSpeedTextBox.eventProces(event);
@@ -840,7 +868,7 @@ void showControlPanel()
 		/////////////////// drawing stuff
 		controlWindow.draw(LifeStartButton);
 		controlWindow.draw(LifeStopButton);
-		//controlWindow.draw(LoadButton);
+		controlWindow.draw(LoadButton);
 		controlWindow.draw(helpButton);
 		controlWindow.draw(loadedOrganismNameTextBox);
 		controlWindow.draw(lifeIndicator1);
