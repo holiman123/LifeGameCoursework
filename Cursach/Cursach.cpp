@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <windows.h>
+#include <WinUser.h>
 #include <SFML/Graphics.hpp>
 //#include <SFML/System.hpp>
 //#include <SFML/Window.hpp>
@@ -387,18 +388,10 @@ void clearField()
 }
 
 // method of 'Life button start'
-int lifeButtonStartPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
+int lifeButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 {
 	if (tickPush)	// one tick if
-		isGameLife = true;	// setting game to start
-
-	return 0;
-}
-// method of 'Life button stop'
-int lifeButtonStopPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
-{
-	if (tickPush)	// one tick if
-		isGameLife = false;	// setting game to stop
+		isGameLife = !isGameLife;	// change game state
 	return 0;
 }
 // method of 'Load organism button'
@@ -450,7 +443,6 @@ int helpButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 	if (tickPush) // one tick if
 	{
 		isHelpActive = !isHelpActive;	// set help value to opposite
-		clearField();					// clear field
 		isGameLife = false;				// stoping game 
 	}
 	return 0;
@@ -459,6 +451,13 @@ int helpButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 int simSpeedTextBoxEndEvent(std::string newText)
 {
 	simSpeed = std::stoi(newText);	// setting simSpeed to new
+	return 0;
+}
+// method of 'clearing field by button'
+int clearButtonEvent(bool pushIn, bool toggleIn, bool tickPush)
+{
+	if (tickPush)
+		clearField();
 	return 0;
 }
 
@@ -767,68 +766,86 @@ void turn()
 	}
 }
 
+// function to show and draw main game field
 void showGraphField(bool ptr[][fieldSize], int fps)
 {
-	sf::Text helpText;
-	sf::Font font; font.loadFromFile("arial.TTF");
-	helpText.setCharacterSize(cellSize*fieldSize / 35);
-	helpText.setFont(font);
+	sf::Text helpText;										// variable to containe help text
+	sf::Font font; font.loadFromFile("arial.TTF");			// setting programm font
+	helpText.setCharacterSize(cellSize*fieldSize / 35);		// set character size of help text
+	helpText.setFont(font);									// applying font to help text
+	// setting strig to help text
 	helpText.setString("\t\tHELLO! this is Conway's Game of Life!\n\nto start your game you need to draw first generation of cells on gray window\nusing mouse control.\n\nTo calculate next generations you need to press \"Life Button\"\nin another window.\n\nYou can stop simulation anytime you want to draw or remove cells from field.\n\nEnjoy!");
 
-	buffer.create(fieldSize*fieldSize * 4);
-	buffer.setUsage(sf::VertexBuffer::Usage::Stream);
+	// setting vertecies buffer:
+	buffer.create(fieldSize*fieldSize * 4);				// buffer create with count of cells multiplayed on one cell vertices
+	buffer.setUsage(sf::VertexBuffer::Usage::Stream);	// setting usage as stream
 
-	sf::ContextSettings settings;
-	settings.antialiasingLevel = 8;
+	sf::ContextSettings settings;						// settings variable
+	settings.antialiasingLevel = 8;						// setting antialiasing
+	// create window:
 	windowMain.create(sf::VideoMode(fieldSize*cellSize, fieldSize*cellSize), "Hellow world!", sf::Style::Titlebar | sf::Style::Close, settings);
-	windowMain.setFramerateLimit(60);
+	windowMain.setFramerateLimit(60);				// set frame rate as 60
 
-	windowMain.clear(sf::Color(255, 230, 185, 0));
-	sf::Event event;
-	bool setTo = false;
-	quads.setPrimitiveType(sf::Quads);
-	quads.resize(fieldSize * fieldSize * 4);
-	while (windowMain.isOpen())
+	windowMain.clear(sf::Color(255, 230, 185, 0));	// clear window to color background
+	sf::Event event;								// event handler
+	bool setTo = false;								// variable to save state of cell when user pressed on it to draw organism
+	quads.setPrimitiveType(sf::Quads);				// set vertex array type to draw rectangels
+	quads.resize(fieldSize * fieldSize * 4);		// resize vertex array with all cells vertices count
+	while (windowMain.isOpen())						// while window opened
 	{
-		while (windowMain.pollEvent(event))
+		while (windowMain.pollEvent(event))			// poll event
 		{
-			if (event.type == sf::Event::Closed) {
-				windowMain.close();
-				exit(1);
+			if (event.type == sf::Event::Closed)	// when user close window 
+			{
+				windowMain.close();	// close window
+				exit(1);			// stop programm
 			}
 
-			if (event.type == sf::Event::MouseButtonPressed && !isGameLife && sf::Mouse::isButtonPressed(sf::Mouse::Left))
+			// when user pressed on field to draw organism
+			if (event.type == sf::Event::MouseButtonPressed && !isGameLife && sf::Mouse::isButtonPressed(sf::Mouse::Left) && event.type != sf::Event::GainedFocus) 
 			{
+				// get current state of pressed cell:
 				setTo = !ptr[event.mouseButton.x / (windowMain.getSize().x / fieldSize)][event.mouseButton.y / (windowMain.getSize().y / fieldSize)];
 			}
+
+			if (event.type == sf::Event::LostFocus)	// if to avoid problems with getting drawing when focus
+			{
+				setTo = true;
+			}
+
+			// if user still pressing mouse button → draw wth remembered state
 			if (!isGameLife && sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
-				sf::Vector2i pos = sf::Mouse::getPosition(windowMain);
-				if(pos.x > 0 && pos.x < fieldSize*cellSize)
-					if (pos.y > 0 && pos.y < fieldSize * cellSize)
+				sf::Vector2i pos = sf::Mouse::getPosition(windowMain);	// get mouse position
+				// check if mouse in window:
+				if(pos.x > 0 && pos.x < fieldSize*cellSize && pos.y > 0 && pos.y < fieldSize * cellSize)
 					{
-						windowMain.requestFocus();
+						//windowMain.requestFocus();
 						ptr[pos.x / (windowMain.getSize().x / fieldSize)][pos.y / (windowMain.getSize().y / fieldSize)] = setTo;
 					}
 			}
+			// when pressed somewhere to draw → close help
 			if (event.type == sf::Event::MouseButtonPressed)
 			{
-				isHelpActive = false;
+				isHelpActive = false; // close help
 			}
 		}
 
-		//-
+		//				 -drawing cells:-
+		// iterate each cell:
 		for (int i = 0; i < fieldSize; i++)
 			for (int j = 0; j < fieldSize; j++)
 			{
-				sf::Vertex* quad = &quads[(i + j * fieldSize) * 4];
+				sf::Vertex* quad = &quads[(i + j * fieldSize) * 4];							// get 4 vertices of current cell
 
-				quad[0].position = sf::Vector2f(i * cellSize, j * cellSize);
+				quad[0].position = sf::Vector2f(i * cellSize, j * cellSize);				// set each vertex of cell to position:
 				quad[1].position = sf::Vector2f((i + 1) * cellSize, j * cellSize);
 				quad[2].position = sf::Vector2f((i + 1) * cellSize, (j + 1) * cellSize);
 				quad[3].position = sf::Vector2f(i * cellSize, (j + 1) * cellSize);
 
+				// coloring cells:
 				if (field[i][j]) {
+					// to life color
 					quad[0].color = sf::Color(210, 110, 110);
 					quad[1].color = sf::Color(210, 110, 110);
 					quad[2].color = sf::Color(210, 110, 110);
@@ -836,6 +853,7 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 				}
 				else
 				{
+					// to dead color
 					quad[0].color = sf::Color(110, 110, 110);
 					quad[1].color = sf::Color(110, 110, 110);
 					quad[2].color = sf::Color(110, 110, 110);
@@ -844,43 +862,44 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 			}
 		//-
 
-		//- buffer
+		//- buffer update
 		buffer.update(&quads[0]);
 		//- 
 
-		windowMain.draw(buffer);
-		if (isHelpActive)
-			windowMain.draw(helpText);
+		windowMain.draw(buffer);		// draw buffer
+		if (isHelpActive)				// if help needs to draw
+			windowMain.draw(helpText);	// draw help text
 
-		windowMain.display();
+		windowMain.display();			// display window
 	}
 }
 
+// function to show and draw game control window
 void showControlPanel()
 {
-	//sf::ContextSettings settings;
-	//settings.antialiasingLevel = 4;
+	// creating window:
+	controlWindow.create(sf::VideoMode(400, 200), "Life control panel", sf::Style::Titlebar | sf::Style::Close);	// create
+	controlWindow.clear(sf::Color(255, 230, 185, 0));																// set background color
+	controlWindow.setVerticalSyncEnabled(true);																		// vSync on
+	controlWindow.setFramerateLimit(60);																			// set frame rate as 60
 
-	controlWindow.create(sf::VideoMode(400, 200), "Life control panel", sf::Style::Titlebar | sf::Style::Close);
-	controlWindow.clear(sf::Color(255, 230, 185, 0));
-	controlWindow.setVerticalSyncEnabled(true);
-	controlWindow.setFramerateLimit(120);
+	sf::Event event;	// event handler
 
-	sf::Event event;
-
-	Button LifeStartButton;
-	LifeStartButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Start Life", 25, sf::Vector2u(15, 20), &lifeButtonStartPressedEvent);
-	Button LifeStopButton;
-	LifeStopButton.load(sf::Vector2u(10, 80), sf::Vector2u(150, 145), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Stop Life", 25, sf::Vector2u(15, 95), &lifeButtonStopPressedEvent);
-	Button LoadButton;
+	// init control window parts variabls
+	Button clearButton;			// clear button var
+	clearButton.load(sf::Vector2u(240, 10), sf::Vector2u(300, 40), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "clear", 18, sf::Vector2u(250,13), &clearButtonEvent);
+	Button LifeButton;			// button to start/stop game 
+	LifeButton.load(sf::Vector2u(10, 10), sf::Vector2u(150, 75), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Game\nbutton", 23, sf::Vector2u(35, 14), &lifeButtonPressedEvent);
+	Button LoadButton;			// load organism from file button
 	LoadButton.load(sf::Vector2u(170, 90), sf::Vector2u(320, 120), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "Load organism", 16, sf::Vector2u(190, 95), &LoadButtonPressedEvent);
-	Button helpButton;
-	helpButton.load(sf::Vector2u(170, 10), sf::Vector2u(230, 40), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "help", 18, sf::Vector2u(185, 13), &helpButtonPressedEvent);
-	TextBox loadedOrganismNameTextBox;
+	Button helpButton;			// show/hide help text button
+	helpButton.load(sf::Vector2u(170, 10), sf::Vector2u(230, 40), sf::Color(170, 170, 170), sf::Color(130, 130, 130), "help", 18, sf::Vector2u(183, 13), &helpButtonPressedEvent);
+	TextBox loadedOrganismNameTextBox;	// text box to input name of organism which user want to load
 	loadedOrganismNameTextBox.load(sf::Vector2f(170, 50), sf::Vector2f(320, 80), sf::Color(180, 180, 180), sf::Color(130, 130, 130), "load organism name", 16, sf::Vector2f(-70, -9));
-	TextBox simSpeedTextBox;
-	simSpeedTextBox.ptrTextBoxEndEvent = &simSpeedTextBoxEndEvent;
+	TextBox simSpeedTextBox;	// text box to change simulation speed
+	simSpeedTextBox.ptrTextBoxEndEvent = &simSpeedTextBoxEndEvent;	// change sim speed when pressed 'Enter'
 	simSpeedTextBox.load(sf::Vector2f(170, 130), sf::Vector2f(320, 160), sf::Color(180, 180, 180), sf::Color(130, 130, 130), "sim speed", 17, sf::Vector2f(-60, -10));
+	//	get struct of able chars to write in simSpeed text box
 	AbleCharsStruct intCharsAble;
 	intCharsAble.ableChars[0] = '0';
 	intCharsAble.ableChars[1] = '1';
@@ -892,72 +911,59 @@ void showControlPanel()
 	intCharsAble.ableChars[7] = '7';
 	intCharsAble.ableChars[8] = '8';
 	intCharsAble.ableChars[9] = '9';
-	simSpeedTextBox.ableChars = intCharsAble;
-	ColorIndicator lifeIndicator1;
+	simSpeedTextBox.ableChars = intCharsAble; 	// set struct of able chars to write in simSpeed text box
+	ColorIndicator lifeIndicator1;				// indicator is game life
 	lifeIndicator1.load(sf::Vector2f(140, 10), sf::Vector2f(150, 75), false);
-	ColorIndicator lifeIndicator2;
-	lifeIndicator2.load(sf::Vector2f(140, 80), sf::Vector2f(150, 145), false);
 
-	while (controlWindow.isOpen())
+	while (controlWindow.isOpen())								// while window open
 	{
-		loadFileName = loadedOrganismNameTextBox.stringText;
-		controlWindow.clear(sf::Color(255, 230, 185, 0));
-		while (controlWindow.pollEvent(event))
+		loadFileName = loadedOrganismNameTextBox.stringText;	// get name of organism which user want to load
+		controlWindow.clear(sf::Color(255, 230, 185, 0));		// color background
+		while (controlWindow.pollEvent(event))					// poll event
 		{
-			// transfer event to exemplar's methods
-			LifeStartButton.eventProcces(event);
-			LifeStopButton.eventProcces(event);
+			// transfer event to exemplar's methods:
+			clearButton.eventProcces(event);
+			LifeButton.eventProcces(event);
 			LoadButton.eventProcces(event);
 			helpButton.eventProcces(event);
 			loadedOrganismNameTextBox.eventProces(event);
 			simSpeedTextBox.eventProces(event);
-			lifeIndicator1.update(isGameLife);
-			lifeIndicator2.update(isGameLife);
+			lifeIndicator1.update(isGameLife); // updating indicator
 
-			if (event.type == sf::Event::Closed) {
-				controlWindow.close();
-				exit(1);
+			if (event.type == sf::Event::Closed) // if user close window
+			{
+				controlWindow.close();	// close window
+				exit(1);				// exit programm
 			}
-			//if (event.type == sf::Event::MouseButtonPressed)
-				//cout << event.mouseButton.x << " " << event.mouseButton.y << "\n";
 		}
 
 		/////////////////// drawing stuff
-		controlWindow.draw(LifeStartButton);
-		controlWindow.draw(LifeStopButton);
+		controlWindow.draw(clearButton);
+		controlWindow.draw(LifeButton);
 		controlWindow.draw(LoadButton);
 		controlWindow.draw(helpButton);
 		controlWindow.draw(loadedOrganismNameTextBox);
 		controlWindow.draw(lifeIndicator1);
-		controlWindow.draw(lifeIndicator2);
 		controlWindow.draw(simSpeedTextBox);
 		///////////////////
 
-		controlWindow.display();
-		Sleep(60);
+		controlWindow.display();	// display control window
 	}
 }
 
+// main:
 int main()
 {
+	// hiding console:
 	//HWND hWnd = GetConsoleWindow();
 	//ShowWindow(hWnd, SW_HIDE);
+	//----------------
 
-	//cout << "Hello World!\n";
+	std::thread thr3(turn);							// start game cycle in separeted thread
+	std::thread thr1(showGraphField, field, 60);	// show game field in separeted thread
+		
+	Sleep(200);										// wait untill 'turn' and 'showGraphField' fully load to avoid crashes
+	std::thread thr(showControlPanel);				// show control panel in separeted thread
 
-	std::thread thr3(turn);
-	std::thread thr1(showGraphField, field, 60);
-	//thr1.detach();
-
-	Sleep(200);
-	std::thread thr(showControlPanel);
-	//thr.detach();
-
-
-
-	//--------------------------------		temp
-	
-	//--------------------------------
-
-	std::cin.get();
+	std::cin.get();									// wait pressing in console to avoid early closing
 }
