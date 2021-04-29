@@ -310,22 +310,28 @@ public:
 	sf::Vector2f secondPoint;	// second position point
 	bool indicatorState = false;
 
+	// constructor 
 	bool load(sf::Vector2f m_firstPoint, sf::Vector2f m_secondPoint, bool startState)
 	{
+		//equalating variables:
 		firstPoint = m_firstPoint;
 		secondPoint = m_secondPoint;
 		indicatorState = startState;
+		//-------------------------
 
-		vertices.setPrimitiveType(sf::Quads);
-		vertices.resize(4);
+		vertices.setPrimitiveType(sf::Quads);	// setting rectangels to draw
+		vertices.resize(4);						// setting size to 4 becouse of 4 vertices in rectangle
 
+		// setting position of each vertex
 		vertices[0].position = firstPoint;
 		vertices[1].position = sf::Vector2f(firstPoint.x, secondPoint.y);
 		vertices[2].position = secondPoint;
 		vertices[3].position = sf::Vector2f(secondPoint.x, firstPoint.y);
 
+		// reading current state of indicator
 		if (indicatorState)
 		{
+			// if indicator is true → draw green
 			vertices[0].color = sf::Color(20, 140, 20);
 			vertices[1].color = sf::Color(20, 140, 20);
 			vertices[2].color = sf::Color(20, 140, 20);
@@ -333,6 +339,7 @@ public:
 		}
 		else
 		{
+			// if indicator is false → draw red
 			vertices[0].color = sf::Color(140, 20, 20);
 			vertices[1].color = sf::Color(140, 20, 20);
 			vertices[2].color = sf::Color(140, 20, 20);
@@ -341,11 +348,13 @@ public:
 		return 0;
 	}
 
+	// function to update indicator drawing state
 	void update(bool newState)
 	{
-		indicatorState = newState;
+		indicatorState = newState; // getting new state of indicator
 		if (indicatorState)
-		{
+		{	
+			// if state is true → draw green
 			vertices[0].color = sf::Color(20, 140, 20);
 			vertices[1].color = sf::Color(20, 140, 20);
 			vertices[2].color = sf::Color(20, 140, 20);
@@ -353,6 +362,7 @@ public:
 		}
 		else
 		{
+			// if state is false → draw red
 			vertices[0].color = sf::Color(140, 20, 20);
 			vertices[1].color = sf::Color(140, 20, 20);
 			vertices[2].color = sf::Color(140, 20, 20);
@@ -360,6 +370,7 @@ public:
 		}
 	}
 
+	// virtual draw
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
 	{
 		states.transform *= getTransform();	// transforming
@@ -367,51 +378,54 @@ public:
 	}
 };
 
+// function to clear game field
 void clearField()
 {
 	for (int i = 0; i < fieldSize; i++)
-		for (int j = 0; j < fieldSize; j++)
-			field[i][j] = false;
+		for (int j = 0; j < fieldSize; j++)	// iterate each cell
+			field[i][j] = false;			// satting cell to 'false'/DEAD cell
 }
 
+// method of 'Life button start'
 int lifeButtonStartPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 {
-	if (tickPush)
-		isGameLife = true;
+	if (tickPush)	// one tick if
+		isGameLife = true;	// setting game to start
 
 	return 0;
 }
+// method of 'Life button stop'
 int lifeButtonStopPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 {
-	if (tickPush)
-		isGameLife = false;
+	if (tickPush)	// one tick if
+		isGameLife = false;	// setting game to stop
 	return 0;
 }
+// method of 'Load organism button'
 int LoadButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 {
 	if (tickPush && !isGameLife && loadFileName != "")
 	{
-		std::ifstream organismFile;
-		organismFile.open(loadFileName + ".txt");
-		std::string organismBuffer;
-		std::string organismLineBuffer;
-		int j = 0;
-		if (organismFile.is_open())
+		std::ifstream organismFile;					// file stream
+		organismFile.open(loadFileName + ".txt");	// open file with organism
+		std::string organismLineBuffer;				// buffer for each line of loading organism
+		int j = 0;	// counter
+		if (organismFile.is_open())	 // if file opened properly
 		{
-			while (std::getline(organismFile, organismLineBuffer))
+			while (std::getline(organismFile, organismLineBuffer))	// iterate each line in file
 			{
-				if(organismLineBuffer.size() <= fieldSize)
-					for (int i = 0; i < fieldSize; i++)
+				if(organismLineBuffer.size() <= fieldSize)	// check: is loading file fit to our field
+					for (int i = 0; i < fieldSize; i++)		// iterate each symbol in line in file
 					{
-						if (organismLineBuffer[i] == '0')
-							field[i][j] = false;
-						if (organismLineBuffer[i] == '1')
-							field[i][j] = true;
+						if (organismLineBuffer[i] == '0')	// check in buffer
+							field[i][j] = false;			// set right state
+						if (organismLineBuffer[i] == '1')	// check in buffer
+							field[i][j] = true;				// set right state
 					}
-				j++;
+				j++; // counter ++
 			}
-			std::cout << organismBuffer;
 		}
+
 		//to save new struct :
 		/*
 		else
@@ -430,48 +444,49 @@ int LoadButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 
 	return 0;
 }
-int SaveButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
-{
-
-	return 0;
-}
+// method of 'show help button'
 int helpButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 {
-	if (tickPush)
+	if (tickPush) // one tick if
 	{
-		isHelpActive = !isHelpActive;
-		clearField();
-		isGameLife = false;
+		isHelpActive = !isHelpActive;	// set help value to opposite
+		clearField();					// clear field
+		isGameLife = false;				// stoping game 
 	}
 	return 0;
 }
+// method of 'sim speed textBox end editing'
 int simSpeedTextBoxEndEvent(std::string newText)
 {
-	simSpeed = std::stoi(newText);
+	simSpeed = std::stoi(newText);	// setting simSpeed to new
 	return 0;
 }
 
+// method of game turn
 void turn()
 {
-	while (true)
+	bool resField[fieldSize][fieldSize]; // new field after turn calculation
+	while (true) // cycle for turns
 	{
-		Sleep(simSpeed);
-		if (isGameLife)
+		Sleep(simSpeed);	// delay to control simSpeed
+		if (isGameLife)		// check if game is started
 		{
-			bool resField[fieldSize][fieldSize];
-
+			// setting all cells of result field to 'false'
 			for (int i = 0; i < fieldSize; i++)
 				for (int j = 0; j < fieldSize; j++)
 					resField[i][j] = false;
 
-			int nearCelsCount = 0;
+			int nearCelsCount = 0;					// counter of cells nearby
+			// iterate each cell
 			for (int i = 0; i < fieldSize; i++)
 			{
 				for (int j = 0; j < fieldSize; j++)
 				{
-					nearCelsCount = 0;
+					nearCelsCount = 0;								// set counter of cells nearby to zero
+
 					if (i == 0 && j != 0 && j != fieldSize - 1)
 					{
+						// if current cell is there:
 						/*
 						. i i i .
 						. . . . .
@@ -479,6 +494,7 @@ void turn()
 						. . . . .
 						. . . . .
 						*/
+						// check specific cells near:
 						if (field[i][j - 1])
 							nearCelsCount++;
 						if (field[i][j + 1])
@@ -498,6 +514,7 @@ void turn()
 					}
 					if (i == fieldSize - 1 && j != 0 && j != fieldSize - 1)
 					{
+						// if current cell is there:
 						/*
 						. . . . .
 						. . . . .
@@ -505,6 +522,7 @@ void turn()
 						. . . . .
 						. i i i .
 						*/
+						// check specific cells near:
 						if (field[i][j - 1])
 							nearCelsCount++;
 						if (field[i][j + 1])
@@ -524,6 +542,7 @@ void turn()
 					}
 					if (j == 0 && i != 0 && i != fieldSize - 1)
 					{
+						// if current cell is there:
 						/*
 						. . . . .
 						j . . . .
@@ -531,6 +550,7 @@ void turn()
 						j . . . .
 						. . . . .
 						*/
+						// check specific cells near:
 						if (field[i][j + fieldSize - 1])
 							nearCelsCount++;
 						if (field[i][j + 1])
@@ -551,6 +571,7 @@ void turn()
 
 					if (j == fieldSize - 1 && i != 0 && i != fieldSize - 1)
 					{
+						// if current cell is there:
 						/*
 						. . . . .
 						. . . . j
@@ -558,6 +579,7 @@ void turn()
 						. . . . j
 						. . . . .
 						*/
+						// check specific cells near:
 						if (field[i][j - 1])
 							nearCelsCount++;
 						if (field[i][0])
@@ -578,6 +600,7 @@ void turn()
 
 					if (i == 0 && j == 0)
 					{
+						// if current cell is there:
 						/*
 						i . . . 1
 						. . . . 1
@@ -585,6 +608,7 @@ void turn()
 						. . . . .
 						1 1 . . 1
 						*/
+						// check specific cells near:
 						if (field[i][j + 1])
 							nearCelsCount++;
 						if (field[i + 1][j + 1])
@@ -605,6 +629,7 @@ void turn()
 
 					if (i == 0 && j == fieldSize - 1)
 					{
+						// if current cell is there:
 						/*
 						1 . . . i
 						1 . . . .
@@ -612,6 +637,7 @@ void turn()
 						. . . . .
 						1 . . 1 1
 						*/
+						// check specific cells near:
 						if (field[i][j - 1])
 							nearCelsCount++;
 						if (field[i + 1][j - 1])
@@ -632,6 +658,7 @@ void turn()
 
 					if (i == fieldSize - 1 && j == 0)
 					{
+						// if current cell is there:
 						/*
 						1 1 . . 1
 						. . . . .
@@ -639,6 +666,7 @@ void turn()
 						. . . . 1
 						i . . . 1
 						*/
+						// check specific cells near:
 						if (field[i][j + 1])
 							nearCelsCount++;
 						if (field[i - 1][j + 1])
@@ -659,6 +687,7 @@ void turn()
 
 					if (i == fieldSize - 1 && j == fieldSize - 1)
 					{
+						// if current cell is there:
 						/*
 						1 . . 1 1
 						. . . . .
@@ -666,6 +695,7 @@ void turn()
 						1 . . . .
 						1 . . . i
 						*/
+						// check specific cells near:
 						if (field[i][j - 1])
 							nearCelsCount++;
 						if (field[i - 1][j - 1])
@@ -686,6 +716,7 @@ void turn()
 
 					if (i != 0 && i != fieldSize - 1 && j != 0 && j != fieldSize - 1)
 					{
+						// if current cell is there:
 						/*
 						. . . . .
 						. i i i .
@@ -693,6 +724,7 @@ void turn()
 						. i i i .
 						. . . . .
 						*/
+						// check specific cells near:
 						if (field[i][j - 1])
 							nearCelsCount++;
 						if (field[i][j + 1])
@@ -711,21 +743,26 @@ void turn()
 							nearCelsCount++;
 					}
 
-					if (!field[i][j]) // if DEAD
+					if (!field[i][j]) // check if current cell is DEAD
 					{
-						if (nearCelsCount == 3)
-							resField[i][j] = true; // now it has LIFE
+						if (nearCelsCount == 3)		// if there is enough cells to become LIFE
+							resField[i][j] = true;	// now it has LIFE
 					}
-					else // if LIFE
+					else // if cell is LIFE
 					{
-						if (nearCelsCount == 3 || nearCelsCount == 2)
-							resField[i][j] = true; // this cell still has life
+						if (nearCelsCount == 3 || nearCelsCount == 2)	// if there is enough cells to stay LIFE
+							resField[i][j] = true;						// this cell still has life
 					}
+
+					// temp (to make maze):
+					field[i][j] = resField[i][j];
 				}
 			}
-			for (int i = 0; i < fieldSize; i++)
-				for (int j = 0; j < fieldSize; j++)
-					field[i][j] = resField[i][j];
+
+			// temp commented (to make Life Game):
+			//for (int i = 0; i < fieldSize; i++)
+			//	for (int j = 0; j < fieldSize; j++)
+			//		field[i][j] = resField[i][j];
 		}
 	}
 }
