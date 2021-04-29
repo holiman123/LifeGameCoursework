@@ -754,15 +754,15 @@ void turn()
 							resField[i][j] = true;						// this cell still has life
 					}
 
-					// temp:
-					field[i][j] = resField[i][j];
+					// temp (to make maze):
+					//field[i][j] = resField[i][j];
 				}
 			}
 
-			// temp commented:
-			//for (int i = 0; i < fieldSize; i++)
-			//	for (int j = 0; j < fieldSize; j++)
-			//		field[i][j] = resField[i][j];
+			// temp commented (to make Life Game):
+			for (int i = 0; i < fieldSize; i++)
+				for (int j = 0; j < fieldSize; j++)
+					field[i][j] = resField[i][j];
 		}
 	}
 }
