@@ -755,14 +755,14 @@ void turn()
 					}
 
 					// temp (to make maze):
-					//field[i][j] = resField[i][j];
+					field[i][j] = resField[i][j];
 				}
 			}
 
 			// temp commented (to make Life Game):
-			for (int i = 0; i < fieldSize; i++)
-				for (int j = 0; j < fieldSize; j++)
-					field[i][j] = resField[i][j];
+			//for (int i = 0; i < fieldSize; i++)
+			//	for (int j = 0; j < fieldSize; j++)
+			//		field[i][j] = resField[i][j];
 		}
 	}
 }
