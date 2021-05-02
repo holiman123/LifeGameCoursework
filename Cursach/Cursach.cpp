@@ -21,7 +21,7 @@ static const int fieldSize = 64;			// size of game field
 static bool field[fieldSize][fieldSize];	// field array of bool
 static bool isGameLife = false;				// boolean - is the game running
 static bool isHelpActive = true;			// boolean - is need to show help text
-static const float cellSize = 16;			// size of one cell in pixels
+static const float cellSize = 15;			// size of one cell in pixels
 static int simSpeed = 60;					// delay in one turn function
 static sf::RenderWindow windowMain;			// main window 
 static sf::RenderWindow controlWindow;		// graph window
@@ -37,9 +37,9 @@ struct AbleCharsStruct
 // class of text to draw in windows
 class Text : public sf::Drawable, public sf::Transformable
 {
-	sf::Font font;	// font of text
-	sf::Text text;	// standart text in sfml
 public:
+	sf::Text text;	// standart text in sfml
+	sf::Font font;	// font of text
 
 	// override '=' operator:
 	Text& operator=(Text other) {
@@ -774,7 +774,8 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 	helpText.setCharacterSize(cellSize*fieldSize / 35);		// set character size of help text
 	helpText.setFont(font);									// applying font to help text
 	// setting strig to help text
-	helpText.setString("\t\tHELLO! this is Conway's Game of Life!\n\nto start your game you need to draw first generation of cells on gray window\nusing mouse control.\n\nTo calculate next generations you need to press \"Life Button\"\nin another window.\n\nYou can stop simulation anytime you want to draw or remove cells from field.\n\nEnjoy!");
+	helpText.setString("\t\tHELLO! this is Conway's Game of Life!\n\nto start your game you need to draw first generation of cells on gray window\nusing mouse control.\n\nTo calculate next generations you need to press \"Life Button\"\nin another window.\n\nYou can stop simulation anytime you want to draw or remove cells from field.\n\nTo load organism you need to write it's name in Textbox in another window\nand press button \"load organism\".\n\nTo change simulation speed you need write new speed\nin another window and press Enter!\n\nEnjoy!");
+	helpText.setPosition(sf::Vector2f(10,0));
 
 	// setting vertecies buffer:
 	buffer.create(fieldSize*fieldSize * 4);				// buffer create with count of cells multiplayed on one cell vertices
@@ -897,6 +898,8 @@ void showControlPanel()
 	TextBox loadedOrganismNameTextBox;	// text box to input name of organism which user want to load
 	loadedOrganismNameTextBox.load(sf::Vector2f(170, 50), sf::Vector2f(320, 80), sf::Color(180, 180, 180), sf::Color(130, 130, 130), "load organism name", 16, sf::Vector2f(-70, -9));
 	TextBox simSpeedTextBox;	// text box to change simulation speed
+	Text currentSimSpeedtext("current sim speed: ",16);
+	currentSimSpeedtext.setPosition(sf::Vector2f(10, 135));
 	simSpeedTextBox.ptrTextBoxEndEvent = &simSpeedTextBoxEndEvent;	// change sim speed when pressed 'Enter'
 	simSpeedTextBox.load(sf::Vector2f(170, 130), sf::Vector2f(320, 160), sf::Color(180, 180, 180), sf::Color(130, 130, 130), "sim speed", 17, sf::Vector2f(-60, -10));
 	//	get struct of able chars to write in simSpeed text box
@@ -919,6 +922,8 @@ void showControlPanel()
 	{
 		loadFileName = loadedOrganismNameTextBox.stringText;	// get name of organism which user want to load
 		controlWindow.clear(sf::Color(255, 230, 185, 0));		// color background
+		currentSimSpeedtext.text = sf::Text("current sim speed: " + std::to_string(simSpeed), currentSimSpeedtext.font, 16);
+		currentSimSpeedtext.text.setFillColor(sf::Color(170,170,170));
 		while (controlWindow.pollEvent(event))					// poll event
 		{
 			// transfer event to exemplar's methods:
@@ -945,6 +950,7 @@ void showControlPanel()
 		controlWindow.draw(loadedOrganismNameTextBox);
 		controlWindow.draw(lifeIndicator1);
 		controlWindow.draw(simSpeedTextBox);
+		controlWindow.draw(currentSimSpeedtext);
 		///////////////////
 
 		controlWindow.display();	// display control window
