@@ -407,7 +407,8 @@ int LoadButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 		{
 			while (std::getline(organismFile, organismLineBuffer))	// iterate each line in file
 			{
-				if(organismLineBuffer.size() <= fieldSize)	// check: is loading file fit to our field
+				if (organismLineBuffer.size() <= fieldSize)	// check: is loading file fit to our field
+				{
 					for (int i = 0; i < fieldSize; i++)		// iterate each symbol in line in file
 					{
 						if (organismLineBuffer[i] == '0')	// check in buffer
@@ -415,6 +416,9 @@ int LoadButtonPressedEvent(bool pushIn, bool toggleIn, bool tickPush)
 						if (organismLineBuffer[i] == '1')	// check in buffer
 							field[i][j] = true;				// set right state
 					}
+				}
+				else
+					return 1;
 				j++; // counter ++
 			}
 		}
@@ -794,6 +798,7 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 	quads.resize(fieldSize * fieldSize * 4);		// resize vertex array with all cells vertices count
 	while (windowMain.isOpen())						// while window opened
 	{
+		quads.clear();
 		while (windowMain.pollEvent(event))			// poll event
 		{
 			if (event.type == sf::Event::Closed)	// when user close window 
@@ -833,10 +838,12 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 		}
 
 		//				 -drawing cells:-
+		// 
 		// iterate each cell:
 		for (int i = 0; i < fieldSize; i++)
 			for (int j = 0; j < fieldSize; j++)
 			{
+
 				sf::Vertex* quad = &quads[(i + j * fieldSize) * 4];							// get 4 vertices of current cell
 
 				quad[0].position = sf::Vector2f(i * cellSize, j * cellSize);				// set each vertex of cell to position:
@@ -874,7 +881,7 @@ void showGraphField(bool ptr[][fieldSize], int fps)
 		windowMain.display();			// display window
 	}
 }
-
+	
 // function to show and draw game control window
 void showControlPanel()
 {
